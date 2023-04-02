@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.Ox08.experiments</groupId>
+    <artifactId>full-cross</artifactId>
+    <version>1.0-RELEASE</version>
+    <name>0x08 Experiments: Full Cross Application</name>
+    <description>One binary, four OS</description>
+    <packaging>jar</packaging>
+    <url>https://teletype.in/@alex0x08</url>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <exec.mainClass>com.ox08.demos.fullcross.FullCross</exec.mainClass>
+    </properties>
+    <developers>
+        <developer>
+            <name>Alex Chernyshev</name>
+            <timezone>GMT+3</timezone>
+            <email>alex3.145@gmail.com</email>
+        </developer>
+    </developers>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.3.0</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>com.ox08.demos.fullcross.FullCross</mainClass>
+                        </manifest>                       
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.github.genthaler</groupId>
+                <artifactId>beanshell-maven-plugin</artifactId>
+                <version>1.4</version>                
+                <executions>
+               <execution>
+                  <phase>package</phase>
+                  <goals>
+                     <goal>run</goal>
+                  </goals>
+               </execution>
+            </executions>
+                <configuration>
+                    <quiet>true</quiet>                
+                    <script>
+                <![CDATA[
+                        import java.io.*; 
+                        
+                        // function should be defined before actual call
+                        // this just appends source binary to target
+                         void copy(File src,OutputStream fout) {
+                            FileInputStream fin = null;
+                            try {    
+                            fin =new FileInputStream(src);                         
+                            byte[] b = new byte[1024];
+                            int noOfBytes = 0; 
+                            while( (noOfBytes = fin.read(b)) != -1 )
+                            { fout.write(b, 0, noOfBytes);  } 
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            } finally {
+                                fout.flush();
+                                if (fin!=null) { fin.close(); }
+                            }                             
+                        }                  
+                        
+                        // current project folder                                           
+                        String projectDir = System.getProperty("maven.multiModuleProjectDirectory");
+                        // target combined binary
+                        File target = new File(projectDir+"/target/all.cmd");    
+                        if (target.exists()) {
+                            target.delete();
+                        }            
+                        // shell bootloader
+                        File fboot1 = new File(projectDir+"/src/main/cmd/boot.sh");                
+                        
+                        File fboot2 = new File(projectDir+"/src/main/cmd/boot.cmd");                
+                        // jar file with application    
+                        File fjar = new File(projectDir+"/target/full-cross-1.0-RELEASE.jar");                
+                        // open write stream to target combined binary
+                        FileOutputStream fout = new FileOutputStream(target);
+                        // write bootloader
+                        copy(fboot1,fout);
+                        copy(fboot2,fout);
+                        // write jar
+                        copy(fjar,fout);
+                        fout.close();
+                        target.setExecutable(true);
+                ]]>
+                    </script>
+                </configuration>                
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>3.1.1</version>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
