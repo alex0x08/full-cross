@@ -1,4 +1,4 @@
 # full-cross
-PoC for single executable binary that runs on Windows, MacOS, Linux and FreeBSD.
+Демонстрация возможности запуска полноценного приложения в четырех разных ОС, без пересборки и переделки.
 
-Written for my article (russian version): https://blog.0x08.ru/full-cross
+Статья: https://blog.0x08.ru/full-cross
